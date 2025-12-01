@@ -1,9 +1,13 @@
 import streamlit as st
 import tempfile
 import os
+from dotenv import load_dotenv
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 
 from src.rag_engine import create_vector_store, build_agent
+
+# Load environment variables from .env file
+load_dotenv()
 
 st.set_page_config(
     page_title="Financial RAG Chatbot",
@@ -14,16 +18,14 @@ st.set_page_config(
 with st.sidebar:
     st.header("Configuration")
     
-    api_key = st.text_input("Google API Key", type="password")
+    # Get API key from environment variable (safer approach)
+    api_key = os.getenv("GOOGLE_API_KEY")
     
     if not api_key:
-        if os.getenv("GOOGLE_API_KEY"):
-            api_key = os.getenv("GOOGLE_API_KEY")
-            st.success("API Key found in environment.")
-        else:
-            st.warning("Please enter your API Key to proceed.")
-    else:
-        os.environ["GOOGLE_API_KEY"] = api_key
+        st.error(" GOOGLE_API_KEY not found in environment variables. Please set it in your .env file.")
+        st.stop()
+    
+    os.environ["GOOGLE_API_KEY"] = api_key
     
     uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
     
